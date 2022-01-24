@@ -79,7 +79,7 @@ universesToGenerate.each({ u ->
     }
 })
 
-// This task removes any *.generated.kt files left behind from previous builds runs.  Without this, there is nothing to
+// This task removes any *.generated.kt files left behind from previous builds.  Without this, there is nothing to
 // remove generated code for deleted and renamed PIG domains, which could be very confusing.
 tasks.register('clean-pig-generated-files', Delete) {
     group 'pig'

@@ -25,6 +25,7 @@ import org.partiql.pig.errors.PigException
 import org.partiql.pig.generator.custom.applyCustomTemplate
 import org.partiql.pig.generator.html.applyHtmlTemplate
 import org.partiql.pig.generator.kotlin.convertToKTypeUniverse
+import org.partiql.pig.generator.rust.applyRustTemplate
 import org.partiql.pig.generator.kotlin.generateKotlinCode
 import java.io.File
 import java.io.FileInputStream
@@ -80,6 +81,13 @@ fun generateCode(command: Command.Generate) {
             progress("applying the Kotlin template once for each domain...")
 
             generateKotlinCode(command.target.namespace, kotlinTypeUniverse, command.target.outputDirectory)
+        }
+        is TargetLanguage.Rust -> {
+            progress("output file  : ${command.target.outputFile}")
+
+            PrintWriter(command.target.outputFile).use { printWriter ->
+                applyRustTemplate(typeUniverse.computeTypeDomains(), printWriter)
+            }
         }
         is TargetLanguage.Custom -> {
             progress("output file  : ${command.target.outputFile}")

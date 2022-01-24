@@ -44,6 +44,61 @@ class SumConverterTests {
             "fun (${node.varName.text}) -> ${convert(node.body)}"
     }
 
+    private val toyOperatorConverter2 = object : ToyLang.Operator.Converter<String> {
+        override fun convertPlus(node: ToyLang.Operator.Plus): String = "+"
+        override fun convertMinus(node: ToyLang.Operator.Minus): String = "-"
+        override fun convertTimes(node: ToyLang.Operator.Times): String = "*"
+        override fun convertDivide(node: ToyLang.Operator.Divide): String = "/"
+        override fun convertModulo(node: ToyLang.Operator.Modulo): String = "%"
+    }
+
+    fun astToSource(ast: ToyLang.Expr): String {
+        val builder = StringBuilder()
+        object : ToyLang.Expr.Converter<Unit> {
+
+            override fun convertLit(node: ToyLang.Expr.Lit) {
+                builder.append("${node.value}")
+            }
+
+            override fun convertVariable(node: ToyLang.Expr.Variable) {
+                builder.append(node.name.text)
+            }
+
+            override fun convertNot(node: ToyLang.Expr.Not) {
+                builder.append("!")
+                convert(node.expr)
+            }
+
+            override fun convertNary(node: ToyLang.Expr.Nary) {
+                // This Converter<T> implementation isn't responsible for converting ToyLang.Operator instances.
+                // delegate to toyOperatorConverter for that.
+                val op = toyOperatorConverter.convert(node.op)
+
+                // we assume there are at least 2 operands here.
+                convert(node.operands.first())
+
+                node.operands.drop(1).forEach {
+                    builder.append(" $op ")
+                    convert(it)
+                }
+            }
+
+            override fun convertLet(node: ToyLang.Expr.Let) {
+                builder.append("let ${node.name.text} = ")
+                convert(node.value)
+                builder.append(" in ")
+                convert(node.body)
+            }
+
+            override fun convertFunction(node: ToyLang.Expr.Function) {
+                builder.append("fun (${node.varName.text}) -> ")
+                convert(node.body)
+            }
+        }.convert(ast)
+
+        return builder.toString()
+    }
+
     data class TestCase(val ast: ToyLang.Expr, val expectedStringRepresentation: String)
 
     class Arguments : ArgumentsProviderBase() {
@@ -78,6 +133,13 @@ class SumConverterTests {
     @ArgumentsSource(Arguments::class)
     fun `convert toy AST to ocaml-like string`(tc: TestCase) {
         val converted = toyExprConverter.convert(tc.ast)
+
+        assertEquals(tc.expectedStringRepresentation, converted)
+    }
+    @ParameterizedTest
+    @ArgumentsSource(Arguments::class)
+    fun `convert toy AST to ocaml-like string 2`(tc: TestCase) {
+        val converted = astToSource(tc.ast)
 
         assertEquals(tc.expectedStringRepresentation, converted)
     }

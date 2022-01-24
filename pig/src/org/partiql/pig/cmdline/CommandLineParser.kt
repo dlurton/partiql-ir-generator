@@ -32,6 +32,7 @@ class CommandLineParser {
         val requireOutputDirectory: Boolean
     ) {
         KOTLIN(requireNamespace = true, requireTemplateFile = false, requireOutputFile = false, requireOutputDirectory = true),
+        RUST(requireNamespace = false, requireTemplateFile = false, requireOutputFile = true, requireOutputDirectory = true),
         CUSTOM(requireNamespace = false, requireTemplateFile = true, requireOutputFile = true, requireOutputDirectory = false),
         HTML(requireNamespace = false, requireTemplateFile = false, requireOutputFile = true, requireOutputDirectory = false)
     }
@@ -61,6 +62,7 @@ class CommandLineParser {
                 |Each target requires certain arguments:
                 |
                 |   --target=kotlin requires --namespace=<ns> and --output-directory=<out-dir>
+                |   --target=rust   requires --output-file=<output-rs-file>
                 |   --target=custom requires --template=<path-to-template> and --output-file=<generated-file>
                 |   --target=html   requires --output-file=<output-html-file>
                 |
@@ -75,6 +77,10 @@ class CommandLineParser {
                 |      --output-directory=generated-src \
                 |      --namespace=org.example.domain
                 |  
+                |  pig --target=rust \
+                |      --universe=universe.ion \ 
+                |      --output-file=example.rs \
+                |       
                 |  pig --target=custom \
                 |      --universe=universe.ion \ 
                 |      --output-file=example.txt \
@@ -195,6 +201,9 @@ class CommandLineParser {
                         )
                         LanguageTargetType.CUSTOM -> TargetLanguage.Custom(
                             templateFile = optSet.valueOf(templateOpt),
+                            outputFile = optSet.valueOf(outputFileOpt) as File
+                        )
+                        LanguageTargetType.RUST -> TargetLanguage.Rust(
                             outputFile = optSet.valueOf(outputFileOpt) as File
                         )
                     }

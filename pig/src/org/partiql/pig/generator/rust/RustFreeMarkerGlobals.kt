@@ -13,13 +13,14 @@
  *  permissions and limitations under the License.
  */
 
-package org.partiql.pig.cmdline
+package org.partiql.pig.generator.rust
 
-import java.io.File
+import java.time.OffsetDateTime
 
-sealed class TargetLanguage {
-    data class Kotlin(val namespace: String, val outputDirectory: File) : TargetLanguage()
-    data class Rust(val outputFile: File) : TargetLanguage()
-    data class Custom(val templateFile: File, val outputFile: File) : TargetLanguage()
-    data class Html(val outputFile: File) : TargetLanguage()
-}
+/** The properties of [RustFreeMarkerGlobals] become global variables for our freemarker templates. */
+@Suppress("unused")
+data class RustFreeMarkerGlobals(
+    val domains: List<RustTypeDomain>,
+    val generatedDate: OffsetDateTime
+)
+
